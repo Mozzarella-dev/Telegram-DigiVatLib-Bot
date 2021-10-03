@@ -2,7 +2,7 @@ import logging
 import shutil
 import urllib.request
 from fpdf import FPDF
-import PIL
+from PIL import Image
 import requests
 import json
 import os
