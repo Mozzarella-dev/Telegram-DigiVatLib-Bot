@@ -54,7 +54,7 @@ class Book:
         return download_list
 
     def make_temp_path(self):
-        temp_path = os.path.join(os.getcwd(), 'temp')
+        temp_path = 'temp'
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
         return temp_path
@@ -111,6 +111,8 @@ class Book:
 
 print(f"## Numero di libri da scaricare: {len(lista_link_libri)}\n")
 for index, link in enumerate(lista_link_libri):
+
+
     book = Book(link)
     try:
         link_list = book.get_link_list()
@@ -129,6 +131,10 @@ for index, link in enumerate(lista_link_libri):
               f"##################################\n")
     except:
         print(f"Un errore ha impedito di scaricare {book.label}")
+
+
+
+
 
 shutil.rmtree(temp_path)
 
