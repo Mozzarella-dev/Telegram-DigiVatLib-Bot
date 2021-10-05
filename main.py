@@ -19,15 +19,16 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+
 class Book:
     def __init__(self, book_url, userid):
         self.base_url = 'https://digi.vatlib.it/'
+        self.url = book_url
         self.validated = self.validate_link(book_url)
         if self.validated is None:
             return
         else:
             self.temp_path = self.make_temp_path(userid)
-            self.url = book_url
             self.data = self.get_json_details()
             self.label = self.data['label']
             self.imgs_path = self.make_book_temp_path()
@@ -125,10 +126,8 @@ class Book:
 def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
-    update.message.reply_markdown_v2(
-        fr'Hi {user.mention_markdown_v2()}\!\n Send me a link to download a book.',
-        reply_markup=ForceReply(selective=True),
-    )
+    update.message.reply_text(
+        f'Hi {user.full_name}!\n Send me a link to download a book.')
 
 
 def info_command(update: Update, context: CallbackContext) -> None:
@@ -140,28 +139,26 @@ def info_command(update: Update, context: CallbackContext) -> None:
 
 def process_link_command(update: Update, context: CallbackContext) -> None:
     book = Book(update.message.text, str(update.message.from_user.id))
-    validated = book.validate_link()
+    validated = book.validated
     if validated is None:
         update.message.reply_text('The message does not contain any valid link.')
         return None
-    update.message.reply_text('Trying to process your request, please wait for a confirmation message.')
+    update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
+        'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
     try:
         link_list = book.get_link_list()
         book.start_download(link_list, book.label)
-
         pdfpath = os.path.join(f"PDF-{str(update.message.from_user.id)}")
         if not os.path.exists(pdfpath):
             os.makedirs(pdfpath)
-
         book.makePdf(pdfpath)
         file = os.path.join(pdfpath, f"{book.label}.pdf")
-
         update.message.reply_document(document=open(file, 'rb'), filename=f"{book.label}.pdf")
-        shutil.rmtree(book.temp_path)
-        shutil.rmtree(pdfpath)
-
     except:
         update.message.reply_text('For some reason i could not download the book you requested.')
+    finally:
+        shutil.rmtree(book.temp_path)
+        shutil.rmtree(pdfpath)
     
 
 
