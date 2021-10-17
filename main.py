@@ -149,11 +149,12 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
         return None
     update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
         'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
+    pdfpath = None
     try:
         link_list = book.get_link_list()
         book.start_download(link_list, book.label)
         update.message.reply_text('Pages downloaded, creating PDF...')
-        pdfpath = os.path.join(f"PDF-{str(update.message.from_user.id)}")
+        pdfpath = f"PDF-{str(update.message.from_user.id)}"
         if not os.path.exists(pdfpath):
             os.makedirs(pdfpath)
         book.makePdf(pdfpath)
