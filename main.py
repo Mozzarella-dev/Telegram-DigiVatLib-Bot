@@ -142,6 +142,8 @@ def info_command(update: Update, context: CallbackContext) -> None:
 
 
 def process_link_command(update: Update, context: CallbackContext) -> None:
+    pdfpath = 'none'
+    temppath = 'none1'
     try:
         book = Book(update.message.text, str(update.message.from_user.id))
         validated = book.validated
@@ -150,9 +152,10 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
             return None
         update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
             'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
-        pdfpath = ''
+        
     
         link_list = book.get_link_list()
+        temppath =book.temp_path
         book.start_download(link_list, book.label)
         update.message.reply_text('Pages downloaded, creating PDF...')
         pdfpath = f"PDF-{str(update.message.from_user.id)}"
@@ -169,8 +172,8 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('For some reason i could not download the book you requested.')
         logger.error(e)
     finally:
-        if os.path.exists(book.temp_path):
-            shutil.rmtree(book.temp_path)
+        if os.path.exists(temppath):
+            shutil.rmtree(temppath)
         if os.path.exists(pdfpath):
             shutil.rmtree(pdfpath)
     
