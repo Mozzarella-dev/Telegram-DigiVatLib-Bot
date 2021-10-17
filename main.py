@@ -142,15 +142,16 @@ def info_command(update: Update, context: CallbackContext) -> None:
 
 
 def process_link_command(update: Update, context: CallbackContext) -> None:
-    book = Book(update.message.text, str(update.message.from_user.id))
-    validated = book.validated
-    if validated is None:
-        update.message.reply_text('The message does not contain any valid link.')
-        return None
-    update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
-        'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
-    pdfpath = ''
     try:
+        book = Book(update.message.text, str(update.message.from_user.id))
+        validated = book.validated
+        if validated is None:
+            update.message.reply_text('The message does not contain any valid link.')
+            return None
+        update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
+            'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
+        pdfpath = ''
+    
         link_list = book.get_link_list()
         book.start_download(link_list, book.label)
         update.message.reply_text('Pages downloaded, creating PDF...')
