@@ -11,6 +11,9 @@ from os.path import isfile, join
 from telegram import Update, ForceReply, user
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from anonfile import AnonFile
+import requests
+import urllib3
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
 
 # Enable logging
 logging.basicConfig(
