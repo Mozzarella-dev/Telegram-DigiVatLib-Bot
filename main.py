@@ -3,7 +3,7 @@ import shutil
 import urllib.request
 from fpdf import FPDF
 from PIL import Image
-import requests
+import httpx
 import json
 import os
 from os import listdir
@@ -12,12 +12,6 @@ from telegram import Update, ForceReply, user
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from anonfile import AnonFile
 
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
-try:
-    requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += 'HIGH:!DH:!aNULL'
-except AttributeError:
-    # no pyopenssl support used / needed / available
-    pass
 
 
 
@@ -115,7 +109,7 @@ class Book:
         book_id = self.url.split("/")[-1:][0]
         manifest_url = base_url + "iiif/" + book_id + "/manifest.json"
 
-        r = requests.get(manifest_url)
+        r = httpx.get(manifest_url)
         data = json.loads(r.text)
         return data
 
