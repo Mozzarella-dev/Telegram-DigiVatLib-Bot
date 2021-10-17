@@ -166,7 +166,7 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(f"Here's your download link:\n{url}")
     except Exception as e:
         update.message.reply_text('For some reason i could not download the book you requested.')
-        print({e})
+        logger.error(e)
     finally:
         if os.path.exists(book.temp_path):
             shutil.rmtree(book.temp_path)
