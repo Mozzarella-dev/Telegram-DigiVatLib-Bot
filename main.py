@@ -11,9 +11,15 @@ from os.path import isfile, join
 from telegram import Update, ForceReply, user
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from anonfile import AnonFile
-import requests
-import urllib3
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=0'
+
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
+try:
+    requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += 'HIGH:!DH:!aNULL'
+except AttributeError:
+    # no pyopenssl support used / needed / available
+    pass
+
+
 
 # Enable logging
 logging.basicConfig(
@@ -148,7 +154,7 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
         book = Book(update.message.text, str(update.message.from_user.id))
         validated = book.validated
         if validated is None:
-            update.message.reply_text('The message does not contain any valid link.')
+            update.message.reply_text('The message does not contain any valid link.\n Grab the link in the url bar when you are viewing the book.')
             return None
         update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
             'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
