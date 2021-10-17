@@ -10,7 +10,6 @@ from os import listdir
 from os.path import isfile, join
 from telegram import Update, ForceReply, user
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-from tokenauth import TOKEN_API
 from anonfile import AnonFile
 
 # Enable logging
@@ -20,6 +19,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+TOKEN = os.environ['TOKEN']
 
 class Book:
     def __init__(self, book_url, userid):
@@ -172,7 +172,7 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater(TOKEN_API)
+    updater = Updater(TOKEN)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
