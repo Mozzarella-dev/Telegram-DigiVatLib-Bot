@@ -11,6 +11,7 @@ from os.path import isfile, join
 from telegram import Update, ForceReply, user
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from tokenauth import TOKEN_API
+from anonfile import AnonFile
 
 # Enable logging
 logging.basicConfig(
@@ -148,12 +149,17 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
     try:
         link_list = book.get_link_list()
         book.start_download(link_list, book.label)
+        update.message.reply_text('Pages downloaded, creating PDF...')
         pdfpath = os.path.join(f"PDF-{str(update.message.from_user.id)}")
         if not os.path.exists(pdfpath):
             os.makedirs(pdfpath)
         book.makePdf(pdfpath)
         file = os.path.join(pdfpath, f"{book.label}.pdf")
-        update.message.reply_document(document=open(file, 'rb'), filename=f"{book.label}.pdf")
+        # TODO: send file with transfer.sh
+        anon = AnonFile()
+        upload = anon.upload(file, progressbar=False)
+        url = upload.url.geturl()
+        update.message.reply_text(f"Here's your download link:\n{url}")
     except:
         update.message.reply_text('For some reason i could not download the book you requested.')
     finally:
