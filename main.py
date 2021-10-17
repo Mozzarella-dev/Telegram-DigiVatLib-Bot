@@ -149,7 +149,7 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
         return None
     update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
         'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
-    pdfpath = None
+    pdfpath = ''
     try:
         link_list = book.get_link_list()
         book.start_download(link_list, book.label)
