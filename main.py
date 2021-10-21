@@ -10,9 +10,19 @@ from os import listdir
 from os.path import isfile, join
 from telegram import Update, ForceReply, user
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-from anonfile import AnonFile
+import siaskynet as skynet
 
 
+class Skylinker:
+    def __init__(self):
+        self.client = skynet.SkynetClient()
+        self.base_url = 'https://siasky.net/'
+        self.skylink_uri = 'sia://'
+
+    def upload(self, file_path):
+        uri_skylink = self.client.upload_file(file_path)
+        skylink = uri_skylink.replace(self.skylink_uri, '')
+        return self.base_url + skylink
 
 
 # Enable logging
@@ -23,6 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 TOKEN = os.environ['TOKEN']
+
 
 class Book:
     def __init__(self, book_url, userid):
@@ -36,13 +47,11 @@ class Book:
             self.data = self.get_json_details()
             self.label = self.data['label']
             self.imgs_path = self.make_book_temp_path()
-        
-    
 
     def validate_link(self, text):
         if not self.base_url in text:
             return None
-        
+
         if ' ' in text:
             splitted = text.split(' ')
             for portion in splitted:
@@ -88,7 +97,8 @@ class Book:
         return bookpath
 
     def makePdf(self, pdfpath):
-        Pages = [f for f in listdir(self.imgs_path) if isfile(join(self.imgs_path, f))]
+        Pages = [f for f in listdir(self.imgs_path)
+                 if isfile(join(self.imgs_path, f))]
         if Pages:
             pdfpdf_file_path = os.path.join(pdfpath, f"{self.label}.pdf")
 
@@ -113,7 +123,6 @@ class Book:
         data = json.loads(r.text)
         return data
 
-
     def download_image(self, url, img_path):
         urllib.request.urlretrieve(url, img_path)
 
@@ -121,7 +130,6 @@ class Book:
         for index, url in enumerate(list):
             img_path = self.make_img_path(index, self.imgs_path)
             self.download_image(url, img_path)
-
 
     def start_download(self, link_list, label):
         self.download_book(link_list)
@@ -137,7 +145,7 @@ def start(update: Update, context: CallbackContext) -> None:
 def info_command(update: Update, context: CallbackContext) -> None:
     message_content = 'This is a bot created to download books in PDF format from the Digital Vatican Library website: https://digi.vatlib.it/\n'\
         'Just send a link and if it is valid the bot will convert the book in pdf format and send it to you.\n'\
-            'If the bot stops working please send a message to @litiasi'
+        'If the bot stops working please send a message to @litiasi'
     update.message.reply_text(message_content)
 
 
@@ -148,14 +156,14 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
         book = Book(update.message.text, str(update.message.from_user.id))
         validated = book.validated
         if validated is None:
-            update.message.reply_text('The message does not contain any valid link.\n Grab the link in the url bar when you are viewing the book.')
+            update.message.reply_text(
+                'The message does not contain any valid link.\n Grab the link in the url bar when you are viewing the book.')
             return None
-        update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'\
-            'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
-        
-    
+        update.message.reply_text('Trying to process your request, do not send more messages and wait for a confirmation message.\n'
+                                  'If the book has a lot of pages this could take a while (5-20 minutes), please wait...')
+
         link_list = book.get_link_list()
-        temppath =book.temp_path
+        temppath = book.temp_path
         book.start_download(link_list, book.label)
         update.message.reply_text('Pages downloaded, creating PDF...')
         pdfpath = f"PDF-{str(update.message.from_user.id)}"
@@ -163,21 +171,18 @@ def process_link_command(update: Update, context: CallbackContext) -> None:
             os.makedirs(pdfpath)
         book.makePdf(pdfpath)
         file = os.path.join(pdfpath, f"{book.label}.pdf")
-        # TODO: send file with transfer.sh
-        anon = AnonFile()
-        upload = anon.upload(file, progressbar=False)
-        url = upload.url.geturl()
+        skylinker = Skylinker()
+        url = skylinker.upload(file)
         update.message.reply_text(f"Here's your download link:\n{url}")
     except Exception as e:
-        update.message.reply_text('For some reason i could not download the book you requested.')
+        update.message.reply_text(
+            'For some reason i could not download the book you requested.')
         logger.error(e)
     finally:
         if os.path.exists(temppath):
             shutil.rmtree(temppath)
         if os.path.exists(pdfpath):
             shutil.rmtree(pdfpath)
-    
-
 
 
 def main() -> None:
@@ -193,7 +198,8 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("info", info_command))
 
     # on non command i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, process_link_command))
+    dispatcher.add_handler(MessageHandler(
+        Filters.text & ~Filters.command, process_link_command))
 
     # Start the Bot
     updater.start_polling()
