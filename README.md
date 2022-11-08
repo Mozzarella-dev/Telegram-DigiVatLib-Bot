@@ -3,11 +3,6 @@ This is a Telegram bot, you can use it to download books from https://digi.vatli
 
 ## How to use
 - 
-  </a>
-  <a href="https://t.me/DigiVatLibRobot">
-    <img src="https://img.shields.io/badge/Add Me!-t.me%2FDigiVatLibRobot-blue">
-  </a>
-
 - Start the bot
 - Send a link and wait
 - Download the pdf file
