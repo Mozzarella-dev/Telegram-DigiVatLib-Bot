@@ -19,7 +19,7 @@ This is a Telegram bot, you can use it to download books from https://digi.vatli
 
 
 ## Future additions
->No future additions in program for this bot!
+>Progress of some sort
 
 
 ---
